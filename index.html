@@ -2,123 +2,186 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vault Pro | Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Vault Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #0f172a; color: #e2e8f0; font-family: sans-serif; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .pin-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #3b82f6; transition: 0.2s; }
-        .pin-dot.fill { background: #3b82f6; box-shadow: 0 0 8px #3b82f6; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { 
+            background-color: #050505; 
+            color: #ffffff; 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+        .glass-card { 
+            background: rgba(20, 20, 20, 0.8); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+        }
+        .keypad-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .keypad-btn:active {
+            transform: scale(0.92);
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+        }
+        .pin-indicator {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        .pin-indicator.filled {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+        }
+        /* Hide scrollbar */
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6">
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
 
-    <div id="auth-box" class="w-full max-w-sm glass rounded-3xl p-8 shadow-xl">
-        <h1 class="text-2xl font-bold text-center mb-2">Secure Access</h1>
-        <p class="text-slate-400 text-center text-sm mb-6">Enter PIN to unlock</p>
-        
-        <div class="flex justify-center gap-3 mb-8">
-            <div id="d-0" class="pin-dot"></div>
-            <div id="d-1" class="pin-dot"></div>
-            <div id="d-2" class="pin-dot"></div>
-            <div id="d-3" class="pin-dot"></div>
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full glass-card text-sm font-bold z-50 opacity-0 pointer-events-none transition-all duration-300"></div>
+
+    <div id="view-auth" class="w-full max-w-[340px] flex flex-col items-center animate-in fade-in duration-500">
+        <div class="mb-12 text-center">
+            <div class="w-20 h-20 bg-blue-600/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-blue-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
+            <h1 class="text-3xl font-extrabold tracking-tight mb-2">Private Vault</h1>
+            <p class="text-gray-500 font-medium">Authentication Required</p>
         </div>
 
-        <div class="grid grid-cols-3 gap-3">
-            {[1,2,3,4,5,6,7,8,9].map(n => `<button onclick="addPin('${n}')" class="h-14 rounded-xl bg-slate-800 hover:bg-slate-700 text-xl font-bold">${n}</button>`).join('')}
-            <button onclick="clearPin()" class="h-14 rounded-xl text-red-400 text-sm font-bold">CLR</button>
-            <button onclick="addPin('0')" class="h-14 rounded-xl bg-slate-800 hover:bg-slate-700 text-xl font-bold">0</button>
-            <button onclick="submitPin()" class="h-14 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold">GO</button>
+        <div class="flex gap-5 mb-12">
+            <div id="p-0" class="pin-indicator"></div>
+            <div id="p-1" class="pin-indicator"></div>
+            <div id="p-2" class="pin-indicator"></div>
+            <div id="p-3" class="pin-indicator"></div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 w-full">
+            {[1,2,3,4,5,6,7,8,9].map(n => `<button onclick="handleKey('${n}')" class="keypad-btn h-16 rounded-2xl text-2xl font-bold">${n}</button>`).join('')}
+            <button onclick="clearPin()" class="h-16 flex items-center justify-center text-red-500 font-bold uppercase text-xs tracking-widest">Clear</button>
+            <button onclick="handleKey('0')" class="keypad-btn h-16 rounded-2xl text-2xl font-bold">0</button>
+            <button onclick="validatePin()" id="go-btn" class="h-16 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-900/20 active:scale-95 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </button>
         </div>
     </div>
 
-    <div id="main-app" class="hidden w-full max-w-lg">
-        <div class="flex justify-between items-end mb-8">
+    <div id="view-dash" class="hidden w-full max-w-[400px] animate-in slide-in-from-bottom-4 duration-500">
+        <div class="flex justify-between items-center mb-10">
             <div>
-                <h2 class="text-3xl font-bold">My Vault</h2>
-                <p id="tracker-stats" class="text-blue-400 text-xs font-bold tracking-widest mt-1">LOADING...</p>
+                <h2 class="text-sm font-bold text-blue-500 uppercase tracking-[0.2em] mb-1">Overview</h2>
+                <h1 class="text-4xl font-extrabold">Trackers</h1>
             </div>
-            <select id="currency" onchange="renderTrackers()" class="bg-slate-800 border-none rounded-lg text-sm p-2 outline-none">
-                <option value="USD">USD ($)</option>
-                <option value="INR">INR (₹)</option>
-            </select>
+            <div class="flex flex-col items-end">
+                <select id="cur-toggle" onchange="renderUI()" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-blue-500 transition-colors">
+                    <option value="USD">USD ($)</option>
+                    <option value="INR">INR (₹)</option>
+                </select>
+            </div>
         </div>
 
-        <div id="list" class="space-y-4"></div>
-        
-        <button id="add-btn" onclick="createNew()" class="mt-6 w-full py-4 border-2 border-dashed border-slate-700 rounded-2xl text-slate-500 hover:border-blue-500 hover:text-blue-500 transition-all">
-            + Create Tracker
+        <div id="tracker-list" class="space-y-4">
+            </div>
+
+        <div id="slot-indicator" class="mt-8 text-center text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4"></div>
+
+        <button id="create-btn" onclick="triggerCreate()" class="w-full h-16 rounded-2xl bg-white text-black font-extrabold flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Create New Tracker
         </button>
     </div>
 
     <script>
-        let currentPin = "";
-        let trackerData = [];
+        let pin = "";
+        let vaultData = [];
 
-        function addPin(v) { if(currentPin.length < 4) { currentPin += v; updateDots(); } }
-        function clearPin() { currentPin = ""; updateDots(); }
-        function updateDots() {
+        function showToast(msg, isError = false) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.color = isError ? '#ff4444' : '#44ff44';
+            t.style.opacity = '1';
+            setTimeout(() => t.style.opacity = '0', 3000);
+        }
+
+        function handleKey(v) {
+            if(pin.length < 4) {
+                pin += v;
+                updatePinUI();
+            }
+        }
+
+        function clearPin() {
+            pin = "";
+            updatePinUI();
+        }
+
+        function updatePinUI() {
             for(let i=0; i<4; i++) {
-                document.getElementById(`d-${i}`).classList.toggle('fill', i < currentPin.length);
+                document.getElementById(`p-${i}`).classList.toggle('filled', i < pin.length);
             }
         }
 
-        async function apiFetch(url, options = {}) {
-            try {
-                const res = await fetch(url, options);
-                const text = await res.text();
-                try { return JSON.parse(text); } catch(e) { throw new Error(text); }
-            } catch (err) {
-                alert("API Error: " + err.message);
-                return null;
+        async function validatePin() {
+            if(pin.length !== 4) return showToast("Enter 4-digit PIN", true);
+            const res = await fetch(`/api/get-trackers?pin=${pin}`);
+            if(!res.ok) {
+                const err = await res.json();
+                return showToast(err.error || "Server Error", true);
             }
+            const data = await res.json();
+            vaultData = data.trackers;
+            document.getElementById('view-auth').classList.add('hidden');
+            document.getElementById('view-dash').classList.remove('hidden');
+            renderUI();
         }
 
-        async function submitPin() {
-            if(currentPin.length !== 4) return;
-            const data = await apiFetch(`/api/get-trackers?pin=${currentPin}`);
-            if(data) {
-                trackerData = data.trackers;
-                document.getElementById('auth-box').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-                renderTrackers();
-            }
-        }
-
-        function renderTrackers() {
-            const cur = document.getElementById('currency').value;
+        function renderUI() {
+            const cur = document.getElementById('cur-toggle').value;
             const sym = cur === 'USD' ? '$' : '₹';
-            const list = document.getElementById('list');
-            
-            document.getElementById('tracker-stats').innerText = `${trackerData.length} / 5 TRACKERS USED`;
-            document.getElementById('add-btn').style.display = trackerData.length >= 5 ? 'none' : 'block';
+            const list = document.getElementById('tracker-list');
+            const slot = document.getElementById('slot-indicator');
+            const btn = document.getElementById('create-btn');
 
-            list.innerHTML = trackerData.map(t => `
-                <div class="glass p-5 rounded-2xl flex justify-between items-center">
+            list.innerHTML = vaultData.map(t => `
+                <div class="glass-card p-6 rounded-[2rem] flex justify-between items-center group transition-all hover:translate-y-[-2px]">
                     <div>
-                        <div class="font-bold text-lg">${t.name}</div>
-                        <div class="text-xs text-slate-500">ID: ${t.id}</div>
+                        <h3 class="font-extrabold text-lg text-white group-hover:text-blue-400 transition-colors">${t.name}</h3>
+                        <p class="text-xs font-bold text-gray-600 uppercase tracking-tighter mt-1">Stable Account</p>
                     </div>
                     <div class="text-right">
-                        <div class="text-2xl font-black text-white">${sym}${t.balance}</div>
+                        <span class="text-2xl font-black text-white">${sym}${Number(t.balance).toLocaleString()}</span>
                     </div>
                 </div>
             `).join('');
+
+            slot.innerText = `${vaultData.length} of 5 slots used`;
+            btn.style.display = vaultData.length >= 5 ? 'none' : 'flex';
         }
 
-        async function createNew() {
-            const name = prompt("Tracker Name:");
+        async function triggerCreate() {
+            const name = prompt("Name your tracker:");
             if(!name) return;
-            const res = await apiFetch('/api/create-tracker', {
+
+            const res = await fetch('/api/create-tracker', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ name, pin: currentPin })
+                body: JSON.stringify({ name, pin })
             });
-            if(res && res.success) {
-                const data = await apiFetch(`/api/get-trackers?pin=${currentPin}`);
-                trackerData = data.trackers;
-                renderTrackers();
+
+            if(res.ok) {
+                showToast("Tracker created!");
+                validatePin(); // Refresh
+            } else {
+                const err = await res.json();
+                showToast(err.error, true);
             }
         }
     </script>
