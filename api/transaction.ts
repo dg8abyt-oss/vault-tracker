@@ -25,8 +25,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }]);
       if (txErr) throw txErr;
 
-      // Update Balance
-      const { data: t } = await db.from('trackers').select('balance').eq('id', tracker_id).single();
+      // Update Balance (With Null Check Fix)
+      const { data: t, error: fetchErr } = await db.from('trackers').select('balance').eq('id', tracker_id).single();
+      
+      if (fetchErr || !t) {
+        throw new Error("Tracker not found during balance update");
+      }
+
       const newBal = type === 'income' ? Number(t.balance) + Number(amount) : Number(t.balance) - Number(amount);
       await db.from('trackers').update({ balance: newBal }).eq('id', tracker_id);
 
