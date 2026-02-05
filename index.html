@@ -7,155 +7,92 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { 
-            background-color: #050505; 
-            color: #ffffff; 
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        .glass-card { 
-            background: rgba(20, 20, 20, 0.8); 
-            backdrop-filter: blur(20px); 
-            border: 1px solid rgba(255, 255, 255, 0.08); 
-        }
+        body { background-color: #050505; color: #ffffff; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .glass-card { background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .keypad-btn {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 64px;
-            border-radius: 16px;
-            font-size: 1.5rem;
-            font-weight: 700;
-            transition: all 0.1s ease;
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex; align-items: center; justify-content: center; height: 64px; border-radius: 16px; font-size: 1.5rem; font-weight: 700; cursor: pointer; transition: all 0.1s;
         }
-        .keypad-btn:active {
-            transform: scale(0.95);
-            background: rgba(59, 130, 246, 0.2);
-            border-color: #3b82f6;
-        }
-        .pin-indicator {
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 50%;
-        }
-        .pin-indicator.filled {
-            background: #3b82f6;
-            border-color: #3b82f6;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
-        }
+        .keypad-btn:active { transform: scale(0.95); background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; }
+        .pin-dot { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; transition: 0.2s; }
+        .pin-dot.filled { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); }
     </style>
 </head>
 <body>
-
-    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full glass-card text-sm font-bold z-50 opacity-0 pointer-events-none transition-all"></div>
+    <div id="toast" class="fixed top-6 px-6 py-3 rounded-full glass-card text-sm font-bold z-50 opacity-0 transition-opacity text-red-400"></div>
 
     <div id="view-auth" class="w-full max-w-[320px] px-4 text-center">
         <div class="mb-10">
             <div class="w-16 h-16 bg-blue-600/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             </div>
             <h1 class="text-2xl font-extrabold mb-1">Private Vault</h1>
             <p class="text-gray-500 text-sm font-medium">Authentication Required</p>
         </div>
 
         <div class="flex justify-center gap-4 mb-10">
-            <div id="p-0" class="pin-indicator"></div>
-            <div id="p-1" class="pin-indicator"></div>
-            <div id="p-2" class="pin-indicator"></div>
-            <div id="p-3" class="pin-indicator"></div>
+            <div id="p-0" class="pin-dot"></div><div id="p-1" class="pin-dot"></div><div id="p-2" class="pin-dot"></div><div id="p-3" class="pin-dot"></div>
         </div>
 
         <div class="grid grid-cols-3 gap-3 w-full">
-            <button onclick="handleKey('1')" class="keypad-btn">1</button>
-            <button onclick="handleKey('2')" class="keypad-btn">2</button>
-            <button onclick="handleKey('3')" class="keypad-btn">3</button>
-            <button onclick="handleKey('4')" class="keypad-btn">4</button>
-            <button onclick="handleKey('5')" class="keypad-btn">5</button>
-            <button onclick="handleKey('6')" class="keypad-btn">6</button>
-            <button onclick="handleKey('7')" class="keypad-btn">7</button>
-            <button onclick="handleKey('8')" class="keypad-btn">8</button>
-            <button onclick="handleKey('9')" class="keypad-btn">9</button>
-            <button onclick="clearPin()" class="text-red-500 font-bold text-xs uppercase tracking-widest">Clear</button>
-            <button onclick="handleKey('0')" class="keypad-btn">0</button>
-            <button onclick="validatePin()" class="keypad-btn bg-blue-600 hover:bg-blue-500 border-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            </button>
+            <button onclick="key('1')" class="keypad-btn">1</button>
+            <button onclick="key('2')" class="keypad-btn">2</button>
+            <button onclick="key('3')" class="keypad-btn">3</button>
+            <button onclick="key('4')" class="keypad-btn">4</button>
+            <button onclick="key('5')" class="keypad-btn">5</button>
+            <button onclick="key('6')" class="keypad-btn">6</button>
+            <button onclick="key('7')" class="keypad-btn">7</button>
+            <button onclick="key('8')" class="keypad-btn">8</button>
+            <button onclick="key('9')" class="keypad-btn">9</button>
+            <button onclick="clr()" class="text-red-500 font-bold text-xs tracking-widest">CLEAR</button>
+            <button onclick="key('0')" class="keypad-btn">0</button>
+            <button onclick="auth()" class="keypad-btn bg-blue-600 hover:bg-blue-500 border-none">➜</button>
         </div>
     </div>
 
     <div id="view-dash" class="hidden w-full max-w-[400px] p-6">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-extrabold">Trackers</h1>
-            <select id="cur-toggle" onchange="renderUI()" class="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs font-bold outline-none">
-                <option value="USD">USD ($)</option>
-                <option value="INR">INR (₹)</option>
-            </select>
-        </div>
-
-        <div id="tracker-list" class="space-y-4"></div>
-
-        <div id="slot-indicator" class="mt-8 text-center text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4"></div>
-
-        <button id="create-btn" onclick="triggerCreate()" class="w-full h-14 rounded-2xl bg-white text-black font-extrabold flex items-center justify-center gap-2">
-            Create New Tracker
-        </button>
+        <h1 class="text-3xl font-extrabold mb-8">Trackers</h1>
+        <div id="list" class="space-y-4"></div>
+        <button onclick="create()" id="add-btn" class="mt-8 w-full h-14 rounded-2xl bg-white text-black font-bold">Create New</button>
     </div>
 
     <script>
         let pin = "";
-        let vaultData = [];
-
-        function handleKey(v) { if(pin.length < 4) { pin += v; updatePinUI(); } }
-        function clearPin() { pin = ""; updatePinUI(); }
-        function updatePinUI() {
-            for(let i=0; i<4; i++) document.getElementById(`p-${i}`).classList.toggle('filled', i < pin.length);
+        
+        function key(n) { if(pin.length < 4) { pin += n; renderPin(); } }
+        function clr() { pin = ""; renderPin(); }
+        function renderPin() { for(let i=0; i<4; i++) document.getElementById(`p-${i}`).classList.toggle('filled', i < pin.length); }
+        
+        function toast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.style.opacity = '1';
+            setTimeout(() => t.style.opacity = '0', 3000);
         }
 
-        async function validatePin() {
-            if(pin.length !== 4) return;
-            const res = await fetch(`/api/get-trackers?pin=${pin}`);
-            if(res.ok) {
+        async function auth() {
+            if(pin.length !== 4) return toast("Enter 4 digits");
+            try {
+                const res = await fetch(`/api/get-trackers?pin=${pin}`);
+                if(res.status === 404) return toast("API Error (404): Check Backend");
+                if(!res.ok) return toast("Invalid PIN");
+                
                 const data = await res.json();
-                vaultData = data.trackers;
                 document.getElementById('view-auth').classList.add('hidden');
                 document.getElementById('view-dash').classList.remove('hidden');
-                renderUI();
-            } else {
-                alert("Incorrect PIN or Server Error");
-                clearPin();
-            }
+                
+                const list = document.getElementById('list');
+                list.innerHTML = data.trackers.map(t => `
+                    <div class="glass-card p-6 rounded-3xl flex justify-between items-center">
+                        <span class="font-bold">${t.name}</span>
+                        <span class="text-xl font-black">$${t.balance}</span>
+                    </div>`).join('');
+            } catch(e) { toast("Connection Failed"); console.error(e); }
         }
 
-        function renderUI() {
-            const cur = document.getElementById('cur-toggle').value;
-            const sym = cur === 'USD' ? '$' : '₹';
-            const list = document.getElementById('tracker-list');
-            list.innerHTML = vaultData.map(t => `
-                <div class="glass-card p-6 rounded-3xl flex justify-between items-center">
-                    <div><h3 class="font-bold text-lg">${t.name}</h3><p class="text-[10px] text-gray-500 uppercase tracking-widest">Active</p></div>
-                    <div class="text-xl font-black">${sym}${Number(t.balance).toLocaleString()}</div>
-                </div>
-            `).join('');
-            document.getElementById('slot-indicator').innerText = `${vaultData.length} / 5 used`;
-            document.getElementById('create-btn').style.display = vaultData.length >= 5 ? 'none' : 'flex';
-        }
-
-        async function triggerCreate() {
+        async function create() {
             const name = prompt("Name:");
-            if(!name) return;
-            await fetch('/api/create-tracker', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ name, pin })
-            });
-            validatePin();
+            if(name) await fetch('/api/create-tracker', { method:'POST', body: JSON.stringify({name, pin}) });
+            auth(); // Refresh
         }
     </script>
 </body>
