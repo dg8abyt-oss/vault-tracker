@@ -5,23 +5,32 @@ const db = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    if (req.method === 'POST') {
-      const { tracker_id, amount, type, note } = JSON.parse(req.body);
+    // GET HISTORY
+    if (req.method === 'GET') {
+      const { tracker_id } = req.query;
+      const { data } = await db.from('transactions')
+        .select('*')
+        .eq('tracker_id', tracker_id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      return res.status(200).json({ history: data || [] });
+    }
 
-      // 1. Log Transaction
-      const { error: txErr } = await db.from('transactions').insert([{ tracker_id, amount, type, note }]);
+    // POST TRANSACTION
+    if (req.method === 'POST') {
+      const { tracker_id, amount, type, note, category } = JSON.parse(req.body);
+
+      const { error: txErr } = await db.from('transactions').insert([{ 
+        tracker_id, amount, type, note, category 
+      }]);
       if (txErr) throw txErr;
 
-      // 2. Update Balance (RPC fallback to direct update)
+      // Update Balance
       const { data: t } = await db.from('trackers').select('balance').eq('id', tracker_id).single();
       const newBal = type === 'income' ? Number(t.balance) + Number(amount) : Number(t.balance) - Number(amount);
-      
-      const { error: upErr } = await db.from('trackers').update({ balance: newBal }).eq('id', tracker_id);
-      if (upErr) throw upErr;
+      await db.from('trackers').update({ balance: newBal }).eq('id', tracker_id);
 
       return res.status(200).json({ success: true });
     }
-  } catch (e: any) {
-    return res.status(500).json({ error: e.message });
-  }
+  } catch (e: any) { return res.status(500).json({ error: e.message }); }
 }
