@@ -7,7 +7,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method === 'GET') {
       const { tracker_id } = req.query;
-      const { data } = await db.from('transactions').select('*').eq('tracker_id', tracker_id).order('created_at', { ascending: false }).limit(20);
+      const { data } = await db.from('transactions').select('*').eq('tracker_id', tracker_id).order('created_at', { ascending: false }).limit(50);
       return res.status(200).json({ history: data || [] });
     }
 
