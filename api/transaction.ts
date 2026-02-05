@@ -17,7 +17,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const { error: txErr } = await db.from('transactions').insert([{ tracker_id, amount, type, note, category }]);
       if (txErr) throw txErr;
 
-      // FIXED: Added check for null data
       const { data: t, error: fErr } = await db.from('trackers').select('balance').eq('id', tracker_id).single();
       if(fErr || !t) throw new Error("Tracker not found");
 
