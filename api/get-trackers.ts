@@ -6,7 +6,7 @@ const db = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const { pin } = req.query;
-    if (!pin) return res.status(400).json({ error: "No PIN" });
+    if (!pin) return res.status(400).json({ error: "Missing PIN" });
 
     const { data, error } = await db.from('trackers').select('*').eq('user_pin', pin).limit(5);
     if (error) throw error;
