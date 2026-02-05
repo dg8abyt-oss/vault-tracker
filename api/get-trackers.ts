@@ -9,8 +9,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!pin) return res.status(400).json({ error: "No PIN" });
 
     const { data, error } = await db.from('trackers').select('*').eq('user_pin', pin).limit(5);
-    
     if (error) throw error;
+    
     return res.status(200).json({ trackers: data || [] });
   } catch (e: any) {
     return res.status(500).json({ error: e.message });
