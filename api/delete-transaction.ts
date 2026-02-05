@@ -10,14 +10,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { error } = await db.from('transactions').delete().eq('id', txId);
     if (error) throw error;
 
-    // Revert Balance (With Null Check Fix)
     const revertAmt = type === 'income' ? -Number(amount) : Number(amount);
     
-    const { data: t, error: fetchErr } = await db.from('trackers').select('balance').eq('id', trackerId).single();
-
-    if (fetchErr || !t) {
-      throw new Error("Tracker not found during balance revert");
-    }
+    // FIXED: Added check for null data
+    const { data: t, error: fErr } = await db.from('trackers').select('balance').eq('id', trackerId).single();
+    if(fErr || !t) throw new Error("Tracker not found");
 
     await db.from('trackers').update({ balance: Number(t.balance) + revertAmt }).eq('id', trackerId);
 
