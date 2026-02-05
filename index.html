@@ -6,93 +6,183 @@
     <title>Vault Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { background-color: #050505; color: #ffffff; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-        .glass-card { background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .keypad-btn {
-            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex; align-items: center; justify-content: center; height: 64px; border-radius: 16px; font-size: 1.5rem; font-weight: 700; cursor: pointer; transition: all 0.1s;
-        }
-        .keypad-btn:active { transform: scale(0.95); background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; }
-        .pin-dot { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; transition: 0.2s; }
-        .pin-dot.filled { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
+        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; min-height: 100vh; touch-action: manipulation; }
+        .glass { background: rgba(20,20,20,0.9); backdrop-filter: blur(10px); border: 1px solid #333; transition: transform 0.1s; }
+        .glass:active { transform: scale(0.98); background: rgba(40,40,40,1); }
+        .key-btn { height: 60px; border-radius: 16px; background: #1a1a1a; font-size: 1.5rem; font-weight: 700; transition: 0.1s; }
+        .key-btn:active { background: #333; transform: scale(0.95); }
+        .pin-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #555; transition: 0.2s; }
+        .pin-dot.on { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
     </style>
 </head>
-<body>
-    <div id="toast" class="fixed top-6 px-6 py-3 rounded-full glass-card text-sm font-bold z-50 opacity-0 transition-opacity text-red-400"></div>
+<body class="flex flex-col items-center justify-center p-4">
 
-    <div id="view-auth" class="w-full max-w-[320px] px-4 text-center">
-        <div class="mb-10">
-            <div class="w-16 h-16 bg-blue-600/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
-                <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            </div>
-            <h1 class="text-2xl font-extrabold mb-1">Private Vault</h1>
-            <p class="text-gray-500 text-sm font-medium">Authentication Required</p>
+    <div id="view-auth" class="w-full max-w-xs text-center">
+        <h1 class="text-3xl font-bold mb-8">Vault Access</h1>
+        <div class="flex justify-center gap-4 mb-8">
+            <div id="d0" class="pin-dot"></div><div id="d1" class="pin-dot"></div>
+            <div id="d2" class="pin-dot"></div><div id="d3" class="pin-dot"></div>
         </div>
-
-        <div class="flex justify-center gap-4 mb-10">
-            <div id="p-0" class="pin-dot"></div><div id="p-1" class="pin-dot"></div><div id="p-2" class="pin-dot"></div><div id="p-3" class="pin-dot"></div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-3 w-full">
-            <button onclick="key('1')" class="keypad-btn">1</button>
-            <button onclick="key('2')" class="keypad-btn">2</button>
-            <button onclick="key('3')" class="keypad-btn">3</button>
-            <button onclick="key('4')" class="keypad-btn">4</button>
-            <button onclick="key('5')" class="keypad-btn">5</button>
-            <button onclick="key('6')" class="keypad-btn">6</button>
-            <button onclick="key('7')" class="keypad-btn">7</button>
-            <button onclick="key('8')" class="keypad-btn">8</button>
-            <button onclick="key('9')" class="keypad-btn">9</button>
-            <button onclick="clr()" class="text-red-500 font-bold text-xs tracking-widest">CLEAR</button>
-            <button onclick="key('0')" class="keypad-btn">0</button>
-            <button onclick="auth()" class="keypad-btn bg-blue-600 hover:bg-blue-500 border-none">➜</button>
+        <div class="grid grid-cols-3 gap-3">
+            <button onclick="k('1')" class="key-btn">1</button><button onclick="k('2')" class="key-btn">2</button><button onclick="k('3')" class="key-btn">3</button>
+            <button onclick="k('4')" class="key-btn">4</button><button onclick="k('5')" class="key-btn">5</button><button onclick="k('6')" class="key-btn">6</button>
+            <button onclick="k('7')" class="key-btn">7</button><button onclick="k('8')" class="key-btn">8</button><button onclick="k('9')" class="key-btn">9</button>
+            <button onclick="clr()" class="text-red-500 font-bold text-xs tracking-widest">CLR</button>
+            <button onclick="k('0')" class="key-btn">0</button>
+            <button onclick="auth()" class="key-btn bg-blue-600 hover:bg-blue-500">➜</button>
         </div>
     </div>
 
-    <div id="view-dash" class="hidden w-full max-w-[400px] p-6">
-        <h1 class="text-3xl font-extrabold mb-8">Trackers</h1>
-        <div id="list" class="space-y-4"></div>
-        <button onclick="create()" id="add-btn" class="mt-8 w-full h-14 rounded-2xl bg-white text-black font-bold">Create New</button>
+    <div id="view-dash" class="hidden w-full max-w-md pb-20 pt-10">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">My Trackers</h1>
+            <button onclick="location.reload()" class="text-xs bg-gray-800 px-3 py-1 rounded-full">LOGOUT</button>
+        </div>
+        
+        <div id="tracker-list" class="space-y-4"></div>
+
+        <button onclick="create()" class="w-full mt-6 py-4 rounded-2xl border border-dashed border-gray-700 text-gray-500 hover:text-white font-bold">+ New Tracker</button>
+    </div>
+
+    <div id="view-tx" class="hidden fixed inset-0 bg-black z-[100] p-6 flex flex-col animate-in slide-in-from-bottom-10">
+        <div class="flex justify-between items-center mb-8">
+            <button onclick="closeTx()" class="p-3 rounded-full bg-gray-800 font-bold">← BACK</button>
+            <span class="font-bold text-gray-400">Manage</span>
+        </div>
+        
+        <h1 id="tx-name" class="text-xl font-bold text-gray-400">Tracker</h1>
+        <h2 id="tx-bal" class="text-5xl font-black text-white mb-10">$0</h2>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <button onclick="submitTx('income')" class="h-16 rounded-2xl bg-green-900/30 text-green-400 font-bold border border-green-500/50 hover:bg-green-900/50">
+                + Income
+            </button>
+            <button onclick="submitTx('expense')" class="h-16 rounded-2xl bg-red-900/30 text-red-400 font-bold border border-red-500/50 hover:bg-red-900/50">
+                - Expense
+            </button>
+        </div>
+
+        <input type="number" id="tx-amount" placeholder="0.00" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-xl text-2xl font-bold mb-4 outline-none focus:border-blue-500 text-center text-white">
+        <input type="text" id="tx-note" placeholder="Note (optional)" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-xl mb-4 outline-none focus:border-blue-500 text-center text-white">
+
+        <h3 class="font-bold text-gray-500 mt-6 mb-4 uppercase text-xs tracking-widest">Recent History</h3>
+        <div id="tx-history" class="space-y-3 overflow-y-auto h-48 text-sm pb-10"></div>
     </div>
 
     <script>
+        // GLOBAL DATA STORE
         let pin = "";
-        
-        function key(n) { if(pin.length < 4) { pin += n; renderPin(); } }
+        let globalTrackers = []; 
+        let currentTrackerId = null;
+
+        // AUTH
+        function k(n) { if(pin.length < 4) { pin += n; renderPin(); } }
         function clr() { pin = ""; renderPin(); }
-        function renderPin() { for(let i=0; i<4; i++) document.getElementById(`p-${i}`).classList.toggle('filled', i < pin.length); }
-        
-        function toast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg; t.style.opacity = '1';
-            setTimeout(() => t.style.opacity = '0', 3000);
-        }
+        function renderPin() { for(let i=0; i<4; i++) document.getElementById(`d${i}`).classList.toggle('on', i < pin.length); }
 
         async function auth() {
-            if(pin.length !== 4) return toast("Enter 4 digits");
+            if(pin.length !== 4) return;
             try {
                 const res = await fetch(`/api/get-trackers?pin=${pin}`);
-                if(res.status === 404) return toast("API Error (404): Check Backend");
-                if(!res.ok) return toast("Invalid PIN");
-                
+                if(!res.ok) throw new Error("Auth Failed");
                 const data = await res.json();
+                
+                // SAVE DATA TO GLOBAL VAR
+                globalTrackers = data.trackers; 
+                
+                renderDash();
                 document.getElementById('view-auth').classList.add('hidden');
                 document.getElementById('view-dash').classList.remove('hidden');
-                
-                const list = document.getElementById('list');
-                list.innerHTML = data.trackers.map(t => `
-                    <div class="glass-card p-6 rounded-3xl flex justify-between items-center">
-                        <span class="font-bold">${t.name}</span>
-                        <span class="text-xl font-black">$${t.balance}</span>
-                    </div>`).join('');
-            } catch(e) { toast("Connection Failed"); console.error(e); }
+            } catch(e) {
+                alert("Incorrect PIN or Server Error");
+                clr();
+            }
+        }
+
+        // DASHBOARD
+        function renderDash() {
+            const list = document.getElementById('tracker-list');
+            // We pass the INDEX (i) instead of the object to prevent quote errors
+            list.innerHTML = globalTrackers.map((t, i) => `
+                <div onclick="handleClick(${i})" class="glass p-6 rounded-2xl flex justify-between items-center cursor-pointer select-none">
+                    <div>
+                        <div class="font-bold text-lg text-white">${t.name}</div>
+                        <div class="text-xs text-gray-500">Tap to manage</div>
+                    </div>
+                    <div class="text-2xl font-black text-white">$${Number(t.balance).toLocaleString()}</div>
+                </div>
+            `).join('');
         }
 
         async function create() {
-            const name = prompt("Name:");
-            if(name) await fetch('/api/create-tracker', { method:'POST', body: JSON.stringify({name, pin}) });
-            auth(); // Refresh
+            const name = prompt("Tracker Name:");
+            if(name) {
+                await fetch('/api/create-tracker', { method:'POST', body:JSON.stringify({name, pin}) });
+                auth(); // Reload data
+            }
+        }
+
+        // TRANSACTION
+        function handleClick(index) {
+            console.log("Clicked index:", index); // Debugging
+            const t = globalTrackers[index];
+            if(!t) return alert("Error loading tracker");
+
+            currentTrackerId = t.id;
+            
+            document.getElementById('tx-name').innerText = t.name;
+            document.getElementById('tx-bal').innerText = "$" + Number(t.balance).toLocaleString();
+            document.getElementById('view-tx').classList.remove('hidden');
+            
+            loadHistory(t.id);
+        }
+
+        function closeTx() {
+            document.getElementById('view-tx').classList.add('hidden');
+            auth(); // Refresh balance on close
+        }
+
+        async function loadHistory(id) {
+            document.getElementById('tx-history').innerHTML = '<div class="text-center text-gray-600">Loading...</div>';
+            try {
+                const res = await fetch(`/api/transaction?tracker_id=${id}`);
+                const data = await res.json();
+                const box = document.getElementById('tx-history');
+                
+                if(!data.history || data.history.length === 0) {
+                    box.innerHTML = '<div class="text-center text-gray-700">No transactions yet.</div>';
+                    return;
+                }
+
+                box.innerHTML = data.history.map(h => `
+                    <div class="flex justify-between p-3 bg-gray-900 rounded-lg border border-gray-800">
+                        <span class="text-gray-300 font-medium">${h.note || 'Transaction'}</span>
+                        <span class="${h.type === 'income' ? 'text-green-400' : 'text-red-400'} font-bold">
+                            ${h.type==='income' ? '+' : '-'}${h.amount}
+                        </span>
+                    </div>
+                `).join('');
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function submitTx(type) {
+            const amt = document.getElementById('tx-amount').value;
+            const note = document.getElementById('tx-note').value;
+            
+            if(!amt) return alert("Please enter an amount");
+            
+            await fetch('/api/transaction', {
+                method: 'POST',
+                body: JSON.stringify({ tracker_id: currentTrackerId, amount: amt, type, note })
+            });
+            
+            // Clear inputs and close
+            document.getElementById('tx-amount').value = "";
+            document.getElementById('tx-note').value = "";
+            closeTx();
         }
     </script>
 </body>
