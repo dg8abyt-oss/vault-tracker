@@ -5,32 +5,21 @@ const db = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    // GET HISTORY
     if (req.method === 'GET') {
       const { tracker_id } = req.query;
-      const { data } = await db.from('transactions')
-        .select('*')
-        .eq('tracker_id', tracker_id)
-        .order('created_at', { ascending: false })
-        .limit(20);
+      const { data } = await db.from('transactions').select('*').eq('tracker_id', tracker_id).order('created_at', { ascending: false }).limit(20);
       return res.status(200).json({ history: data || [] });
     }
 
-    // POST TRANSACTION
     if (req.method === 'POST') {
       const { tracker_id, amount, type, note, category } = JSON.parse(req.body);
 
-      const { error: txErr } = await db.from('transactions').insert([{ 
-        tracker_id, amount, type, note, category 
-      }]);
+      const { error: txErr } = await db.from('transactions').insert([{ tracker_id, amount, type, note, category }]);
       if (txErr) throw txErr;
 
-      // Update Balance (With Null Check Fix)
-      const { data: t, error: fetchErr } = await db.from('trackers').select('balance').eq('id', tracker_id).single();
-      
-      if (fetchErr || !t) {
-        throw new Error("Tracker not found during balance update");
-      }
+      // FIXED: Added check for null data
+      const { data: t, error: fErr } = await db.from('trackers').select('balance').eq('id', tracker_id).single();
+      if(fErr || !t) throw new Error("Tracker not found");
 
       const newBal = type === 'income' ? Number(t.balance) + Number(amount) : Number(t.balance) - Number(amount);
       await db.from('trackers').update({ balance: newBal }).eq('id', tracker_id);
