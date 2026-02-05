@@ -6,8 +6,8 @@ const db = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const { name, pin, initialBalance, type } = JSON.parse(req.body);
-    const { count } = await db.from('trackers').select('*', { count: 'exact', head: true }).eq('user_pin', pin);
     
+    const { count } = await db.from('trackers').select('*', { count: 'exact', head: true }).eq('user_pin', pin);
     if (count && count >= 10) return res.status(400).json({ error: "Limit Reached" });
     
     await db.from('trackers').insert([{ 
