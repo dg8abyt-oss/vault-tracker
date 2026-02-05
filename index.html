@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Vault Pro</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; min-height: 100vh; touch-action: manipulation; }
+        .glass { background: rgba(20,20,20,0.95); backdrop-filter: blur(20px); border: 1px solid #333; }
+        .pin-dot { width: 14px; height: 14px; border: 2px solid #444; border-radius: 50%; transition: 0.2s; }
+        .pin-dot.on { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+        .key-btn { height: 60px; border-radius: 16px; background: #1a1a1a; font-size: 1.5rem; font-weight: 700; transition: 0.1s; }
+        .key-btn:active { background: #333; transform: scale(0.95); }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4">
+
+    <div id="status-bar" class="fixed top-0 w-full text-center text-[10px] font-bold py-1 hidden"></div>
+
+    <div id="view-auth" class="w-full max-w-xs text-center">
+        <h1 class="text-3xl font-bold mb-8">Vault Access</h1>
+        <div class="flex justify-center gap-4 mb-8">
+            <div id="d0" class="pin-dot"></div><div id="d1" class="pin-dot"></div>
+            <div id="d2" class="pin-dot"></div><div id="d3" class="pin-dot"></div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+            <button onclick="k('1')" class="key-btn">1</button><button onclick="k('2')" class="key-btn">2</button><button onclick="k('3')" class="key-btn">3</button>
+            <button onclick="k('4')" class="key-btn">4</button><button onclick="k('5')" class="key-btn">5</button><button onclick="k('6')" class="key-btn">6</button>
+            <button onclick="k('7')" class="key-btn">7</button><button onclick="k('8')" class="key-btn">8</button><button onclick="k('9')" class="key-btn">9</button>
+            <button onclick="clr()" class="text-red-500 font-bold text-xs tracking-widest">CLR</button>
+            <button onclick="k('0')" class="key-btn">0</button>
+            <button onclick="auth()" class="key-btn bg-blue-600 hover:bg-blue-500">➜</button>
+        </div>
+    </div>
+
+    <div id="view-dash" class="hidden w-full max-w-md pb-20 pt-6 h-screen flex flex-col">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">Overview</h1>
+            <button onclick="location.reload()" class="text-xs bg-gray-800 px-3 py-1 rounded-full">LOCK</button>
+        </div>
+        <div id="tracker-list" class="space-y-4 overflow-y-auto flex-1 pb-4"></div>
+        <button onclick="openCreate()" class="w-full py-4 rounded-2xl border border-dashed border-gray-700 text-gray-500 font-bold">+ Add Tracker</button>
+    </div>
+
+    <div id="modal-create" class="hidden fixed inset-0 bg-black/90 z-[110] flex items-center justify-center p-6">
+        <div class="glass w-full max-w-sm p-6 rounded-3xl">
+            <h2 class="text-xl font-bold mb-4">New Tracker</h2>
+            <input id="new-name" type="text" placeholder="Name" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl mb-3 text-white">
+            <select id="new-type" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl mb-3 text-white">
+                <option value="wallet">Wallet</option><option value="allowance">Allowance</option>
+            </select>
+            <input id="new-bal" type="number" placeholder="Initial Balance" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl mb-6 text-white">
+            <div class="flex gap-3"><button onclick="closeCreate()" class="flex-1 py-3 bg-gray-800 rounded-xl">Cancel</button><button onclick="doCreate()" class="flex-1 py-3 bg-blue-600 rounded-xl">Create</button></div>
+        </div>
+    </div>
+
+    <div id="view-tx" class="hidden fixed inset-0 bg-black z-[100] p-6 flex flex-col animate-in slide-in-from-bottom-10">
+        <button onclick="closeTx()" class="self-start p-3 rounded-full bg-gray-800 font-bold text-xs mb-6">BACK</button>
+        <div class="flex justify-between items-end mb-6">
+            <div><h1 id="tx-name" class="text-xl font-bold text-gray-400">Tracker</h1><h2 id="tx-bal" class="text-4xl font-black text-white">$0</h2></div>
+            <div class="w-16 h-16"><canvas id="tx-chart"></canvas></div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mb-4">
+            <select id="tx-cat" class="col-span-3 bg-gray-900 border border-gray-700 p-3 rounded-xl text-white">
+                <option value="General">General</option><option value="Food">Food</option><option value="Transport">Transport</option><option value="Shopping">Shopping</option>
+            </select>
+            <input type="number" id="tx-amount" placeholder="0.00" class="col-span-2 bg-gray-900 border border-gray-700 p-3 rounded-xl text-xl font-bold text-white text-center">
+            <div class="col-span-1 flex items-center justify-center bg-gray-800 rounded-xl text-gray-400 font-bold">$</div>
+        </div>
+        <input type="text" id="tx-note" placeholder="Note" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl mb-6 text-white text-center">
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <button onclick="submitTx('income')" class="h-14 rounded-2xl bg-green-900/20 text-green-400 font-bold border border-green-500/30">+ Add</button>
+            <button onclick="submitTx('expense')" class="h-14 rounded-2xl bg-red-900/20 text-red-400 font-bold border border-red-500/30">- Spend</button>
+        </div>
+        <div id="tx-history" class="space-y-3 overflow-y-auto flex-1 pb-10"></div>
+    </div>
+
+    <script>
+        let pin = "";
+        let trackers = [];
+        let curId = null;
+        let charts = {};
+
+        function debug(msg, isErr=false) {
+            const bar = document.getElementById('status-bar');
+            bar.classList.remove('hidden');
+            bar.innerText = msg;
+            bar.className = `fixed top-0 w-full text-center text-[10px] font-bold py-1 ${isErr ? 'bg-red-600' : 'bg-blue-600'}`;
+            if(!isErr) setTimeout(() => bar.classList.add('hidden'), 2000);
+        }
+
+        async function checkApi() {
+            try { await fetch('/api/ping'); debug("CONNECTED"); } 
+            catch { debug("CONNECTING...", true); }
+        }
+        checkApi();
+
+        function k(n) { if(pin.length < 4) { pin += n; renderPin(); } }
+        function clr() { pin = ""; renderPin(); }
+        function renderPin() { for(let i=0; i<4; i++) document.getElementById(`d${i}`).classList.toggle('on', i < pin.length); }
+
+        async function auth() {
+            if(pin.length !== 4) return;
+            debug("VERIFYING...");
+            try {
+                const res = await fetch(`/api/get-trackers?pin=${pin}`);
+                if(!res.ok) throw new Error("AUTH FAILED");
+                const data = await res.json();
+                trackers = data.trackers;
+                renderDash();
+                document.getElementById('view-auth').classList.add('hidden');
+                document.getElementById('view-dash').classList.remove('hidden');
+            } catch(e) { debug("INVALID PIN", true); clr(); }
+        }
+
+        function renderDash() {
+            const list = document.getElementById('tracker-list');
+            list.innerHTML = trackers.map((t, i) => `
+                <div onclick="openTx(${i})" class="glass p-5 rounded-3xl flex justify-between items-center cursor-pointer active:scale-95 transition relative">
+                    <div class="z-10">
+                        <div class="text-[10px] uppercase font-bold ${t.type==='allowance'?'text-purple-400':'text-blue-400'}">${t.type}</div>
+                        <div class="font-bold text-xl">${t.name}</div>
+                        <div class="text-2xl font-black">$${Number(t.balance).toLocaleString()}</div>
+                    </div>
+                    <div class="w-20 h-20"><canvas id="c-${t.id}"></canvas></div>
+                </div>
+            `).join('');
+            setTimeout(() => trackers.forEach(t => drawChart(`c-${t.id}`, t.type)), 50);
+        }
+
+        function drawChart(id, type) {
+            const ctx = document.getElementById(id)?.getContext('2d');
+            if(!ctx) return;
+            if(charts[id]) charts[id].destroy();
+            const color = type === 'allowance' ? '#a855f7' : '#3b82f6';
+            charts[id] = new Chart(ctx, {
+                type: 'doughnut',
+                data: { datasets: [{ data: [70, 30], backgroundColor: [color, '#333'], borderWidth: 0 }] },
+                options: { cutout: '75%', plugins: { legend: false, tooltip: false }, responsive: true }
+            });
+        }
+
+        function openCreate() { document.getElementById('modal-create').classList.remove('hidden'); }
+        function closeCreate() { document.getElementById('modal-create').classList.add('hidden'); }
+        async function doCreate() {
+            const name = document.getElementById('new-name').value;
+            const bal = document.getElementById('new-bal').value;
+            const type = document.getElementById('new-type').value;
+            if(name) {
+                await fetch('/api/create-tracker', { method:'POST', body:JSON.stringify({name, pin, initialBalance:bal, type}) });
+                auth(); closeCreate();
+            }
+        }
+
+        function openTx(idx) {
+            const t = trackers[idx];
+            curId = t.id;
+            document.getElementById('tx-name').innerText = t.name;
+            document.getElementById('tx-bal').innerText = "$" + Number(t.balance).toLocaleString();
+            document.getElementById('view-tx').classList.remove('hidden');
+            drawChart('tx-chart', t.type);
+            loadHistory(t.id);
+        }
+        function closeTx() { document.getElementById('view-tx').classList.add('hidden'); auth(); }
+
+        async function loadHistory(id) {
+            const res = await fetch(`/api/transaction?tracker_id=${id}`);
+            const data = await res.json();
+            document.getElementById('tx-history').innerHTML = (data.history||[]).map(h => `
+                <div class="flex justify-between items-center p-3 bg-gray-900 rounded-xl border border-gray-800">
+                    <div><div class="text-xs text-gray-500 font-bold">${h.category||'Gen'}</div><div class="font-medium">${h.note||'Tx'}</div></div>
+                    <div class="flex items-center gap-3">
+                        <div class="${h.type==='income'?'text-green-400':'text-red-400'} font-bold">${h.type==='income'?'+':'-'}${h.amount}</div>
+                        <button onclick="delTx(${h.id}, ${h.amount}, '${h.type}')" class="text-gray-600 hover:text-red-500 font-bold">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function submitTx(type) {
+            const amt = document.getElementById('tx-amount').value;
+            const note = document.getElementById('tx-note').value;
+            const cat = document.getElementById('tx-cat').value;
+            if(!amt) return;
+            await fetch('/api/transaction', { method:'POST', body:JSON.stringify({tracker_id:curId, amount:amt, type, note, category:cat}) });
+            document.getElementById('tx-amount').value = "";
+            openTx(trackers.findIndex(t => t.id === curId));
+        }
+
+        async function delTx(txId, amt, type) {
+            if(confirm("Delete this transaction?")) {
+                await fetch('/api/delete-transaction', { method:'POST', body:JSON.stringify({txId, trackerId:curId, amount:amt, type}) });
+                loadHistory(curId);
+            }
+        }
+    </script>
+</body>
+</html>
