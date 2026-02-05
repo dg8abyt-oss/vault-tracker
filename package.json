@@ -1,19 +1,18 @@
 {
-  "name": "vault-tracker-buster",
-  "version": "6.0.0",
-  "description": "Cache Busting Update",
+  "name": "vault-tracker-node20",
+  "version": "7.0.0",
+  "description": "Node 20 Upgrade",
   "main": "api/index.js",
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "dependencies": {
     "typescript": "latest",
     "@types/node": "latest",
     "@vercel/node": "latest",
-    "@supabase/supabase-js": "latest",
-    "uuid": "latest"
+    "@supabase/supabase-js": "latest"
   },
   "scripts": {
-    "build": "echo 'CACHE BUST: 6.0' && tsc --noEmit"
+    "build": "echo 'Building for Node 20...' && tsc --noEmit"
   }
 }
