@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Vault Pro</title>
-    
+    <title>Vault Pro v6</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -21,9 +19,7 @@
 </head>
 <body class="flex flex-col items-center justify-center p-4">
 
-    <div id="status-msg" class="fixed top-0 left-0 w-full bg-blue-600 text-center text-[10px] font-bold py-1 hidden">
-        CONNECTING...
-    </div>
+    <div id="status-bar" class="fixed top-0 w-full text-center text-[10px] font-bold py-1 hidden"></div>
 
     <div id="view-auth" class="w-full max-w-xs text-center">
         <h1 class="text-3xl font-bold mb-8">Vault Access</h1>
@@ -55,28 +51,19 @@
             <h2 class="text-xl font-bold mb-4">New Tracker</h2>
             <input id="new-name" type="text" placeholder="Name" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl mb-3 text-white">
             <select id="new-type" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl mb-3 text-white">
-                <option value="wallet">Wallet</option>
-                <option value="allowance">Allowance</option>
+                <option value="wallet">Wallet</option><option value="allowance">Allowance</option>
             </select>
             <input id="new-bal" type="number" placeholder="Initial Balance" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl mb-6 text-white">
-            <div class="flex gap-3">
-                <button onclick="closeCreate()" class="flex-1 py-3 bg-gray-800 rounded-xl font-bold">Cancel</button>
-                <button onclick="doCreate()" class="flex-1 py-3 bg-blue-600 rounded-xl font-bold">Create</button>
-            </div>
+            <div class="flex gap-3"><button onclick="closeCreate()" class="flex-1 py-3 bg-gray-800 rounded-xl">Cancel</button><button onclick="doCreate()" class="flex-1 py-3 bg-blue-600 rounded-xl">Create</button></div>
         </div>
     </div>
 
     <div id="view-tx" class="hidden fixed inset-0 bg-black z-[100] p-6 flex flex-col animate-in slide-in-from-bottom-10">
         <button onclick="closeTx()" class="self-start p-3 rounded-full bg-gray-800 font-bold text-xs mb-6">BACK</button>
-        
         <div class="flex justify-between items-end mb-6">
-            <div>
-                <h1 id="tx-name" class="text-xl font-bold text-gray-400">Tracker</h1>
-                <h2 id="tx-bal" class="text-4xl font-black text-white">$0</h2>
-            </div>
+            <div><h1 id="tx-name" class="text-xl font-bold text-gray-400">Tracker</h1><h2 id="tx-bal" class="text-4xl font-black text-white">$0</h2></div>
             <div class="w-16 h-16"><canvas id="tx-chart"></canvas></div>
         </div>
-
         <div class="grid grid-cols-3 gap-2 mb-4">
             <select id="tx-cat" class="col-span-3 bg-gray-900 border border-gray-700 p-3 rounded-xl text-white">
                 <option value="General">General</option><option value="Food">Food</option><option value="Transport">Transport</option><option value="Shopping">Shopping</option>
@@ -85,12 +72,10 @@
             <div class="col-span-1 flex items-center justify-center bg-gray-800 rounded-xl text-gray-400 font-bold">$</div>
         </div>
         <input type="text" id="tx-note" placeholder="Note" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl mb-6 text-white text-center">
-        
         <div class="grid grid-cols-2 gap-4 mb-6">
             <button onclick="submitTx('income')" class="h-14 rounded-2xl bg-green-900/20 text-green-400 font-bold border border-green-500/30">+ Add</button>
             <button onclick="submitTx('expense')" class="h-14 rounded-2xl bg-red-900/20 text-red-400 font-bold border border-red-500/30">- Spend</button>
         </div>
-        
         <div id="tx-history" class="space-y-3 overflow-y-auto flex-1 pb-10"></div>
     </div>
 
@@ -100,44 +85,38 @@
         let curId = null;
         let charts = {};
 
-        // AUTH & PING
-        async function k(n) { if(pin.length < 4) { pin += n; renderPin(); } }
+        function debug(msg, isErr=false) {
+            const bar = document.getElementById('status-bar');
+            bar.classList.remove('hidden');
+            bar.innerText = msg;
+            bar.className = `fixed top-0 w-full text-center text-[10px] font-bold py-1 ${isErr ? 'bg-red-600' : 'bg-blue-600'}`;
+            if(!isErr) setTimeout(() => bar.classList.add('hidden'), 2000);
+        }
+
+        async function checkApi() {
+            try { await fetch('/api/ping'); debug("API CONNECTED"); } 
+            catch { debug("API OFFLINE - CHECK LOGS", true); }
+        }
+        checkApi();
+
+        function k(n) { if(pin.length < 4) { pin += n; renderPin(); } }
         function clr() { pin = ""; renderPin(); }
         function renderPin() { for(let i=0; i<4; i++) document.getElementById(`d${i}`).classList.toggle('on', i < pin.length); }
 
         async function auth() {
             if(pin.length !== 4) return;
-            const status = document.getElementById('status-msg');
-            status.classList.remove('hidden');
-            status.innerText = "VERIFYING PIN...";
-            status.className = "fixed top-0 w-full bg-blue-600 text-center text-[10px] font-bold py-1";
-
+            debug("AUTHENTICATING...");
             try {
-                // FORCE RELOAD CACHE
-                const res = await fetch(`/api/get-trackers?pin=${pin}&t=${Date.now()}`);
-                
-                if(res.status === 404) {
-                    status.innerText = "ERROR 404: BACKEND NOT FOUND. CHECK DEPLOYMENT.";
-                    status.classList.add('bg-red-600');
-                    return;
-                }
-                
-                if(!res.ok) throw new Error("Incorrect PIN");
-                
+                const res = await fetch(`/api/get-trackers?pin=${pin}`);
+                if(!res.ok) throw new Error("AUTH FAILED");
                 const data = await res.json();
                 trackers = data.trackers;
                 renderDash();
                 document.getElementById('view-auth').classList.add('hidden');
                 document.getElementById('view-dash').classList.remove('hidden');
-                status.classList.add('hidden');
-            } catch(e) { 
-                status.innerText = e.message.toUpperCase();
-                status.classList.add('bg-red-600');
-                setTimeout(() => { status.classList.add('hidden'); clr(); }, 2000);
-            }
+            } catch(e) { debug(e.message, true); clr(); }
         }
 
-        // DASHBOARD
         function renderDash() {
             const list = document.getElementById('tracker-list');
             list.innerHTML = trackers.map((t, i) => `
@@ -165,7 +144,6 @@
             });
         }
 
-        // CREATE
         function openCreate() { document.getElementById('modal-create').classList.remove('hidden'); }
         function closeCreate() { document.getElementById('modal-create').classList.add('hidden'); }
         async function doCreate() {
@@ -178,7 +156,6 @@
             }
         }
 
-        // TRANSACTIONS
         function openTx(idx) {
             const t = trackers[idx];
             curId = t.id;
@@ -188,7 +165,6 @@
             drawChart('tx-chart', t.type);
             loadHistory(t.id);
         }
-
         function closeTx() { document.getElementById('view-tx').classList.add('hidden'); auth(); }
 
         async function loadHistory(id) {
@@ -212,7 +188,6 @@
             if(!amt) return;
             await fetch('/api/transaction', { method:'POST', body:JSON.stringify({tracker_id:curId, amount:amt, type, note, category:cat}) });
             document.getElementById('tx-amount').value = "";
-            document.getElementById('tx-note').value = "";
             openTx(trackers.findIndex(t => t.id === curId));
         }
 
