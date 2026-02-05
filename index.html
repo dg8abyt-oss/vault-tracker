@@ -11,7 +11,11 @@
             background-color: #050505; 
             color: #ffffff; 
             font-family: 'Plus Jakarta Sans', sans-serif;
-            overflow-x: hidden;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
         .glass-card { 
             background: rgba(20, 20, 20, 0.8); 
@@ -21,10 +25,17 @@
         .keypad-btn {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 64px;
+            border-radius: 16px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            transition: all 0.1s ease;
         }
         .keypad-btn:active {
-            transform: scale(0.92);
+            transform: scale(0.95);
             background: rgba(59, 130, 246, 0.2);
             border-color: #3b82f6;
         }
@@ -33,68 +44,66 @@
             height: 14px;
             border: 2px solid rgba(255,255,255,0.2);
             border-radius: 50%;
-            transition: all 0.3s ease;
         }
         .pin-indicator.filled {
             background: #3b82f6;
             border-color: #3b82f6;
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
         }
-        /* Hide scrollbar */
-        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
+<body>
 
-    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full glass-card text-sm font-bold z-50 opacity-0 pointer-events-none transition-all duration-300"></div>
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full glass-card text-sm font-bold z-50 opacity-0 pointer-events-none transition-all"></div>
 
-    <div id="view-auth" class="w-full max-w-[340px] flex flex-col items-center animate-in fade-in duration-500">
-        <div class="mb-12 text-center">
-            <div class="w-20 h-20 bg-blue-600/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-blue-500/20">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+    <div id="view-auth" class="w-full max-w-[320px] px-4 text-center">
+        <div class="mb-10">
+            <div class="w-16 h-16 bg-blue-600/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             </div>
-            <h1 class="text-3xl font-extrabold tracking-tight mb-2">Private Vault</h1>
-            <p class="text-gray-500 font-medium">Authentication Required</p>
+            <h1 class="text-2xl font-extrabold mb-1">Private Vault</h1>
+            <p class="text-gray-500 text-sm font-medium">Authentication Required</p>
         </div>
 
-        <div class="flex gap-5 mb-12">
+        <div class="flex justify-center gap-4 mb-10">
             <div id="p-0" class="pin-indicator"></div>
             <div id="p-1" class="pin-indicator"></div>
             <div id="p-2" class="pin-indicator"></div>
             <div id="p-3" class="pin-indicator"></div>
         </div>
 
-        <div class="grid grid-cols-3 gap-4 w-full">
-            {[1,2,3,4,5,6,7,8,9].map(n => `<button onclick="handleKey('${n}')" class="keypad-btn h-16 rounded-2xl text-2xl font-bold">${n}</button>`).join('')}
-            <button onclick="clearPin()" class="h-16 flex items-center justify-center text-red-500 font-bold uppercase text-xs tracking-widest">Clear</button>
-            <button onclick="handleKey('0')" class="keypad-btn h-16 rounded-2xl text-2xl font-bold">0</button>
-            <button onclick="validatePin()" id="go-btn" class="h-16 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-900/20 active:scale-95 transition-transform">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <div class="grid grid-cols-3 gap-3 w-full">
+            <button onclick="handleKey('1')" class="keypad-btn">1</button>
+            <button onclick="handleKey('2')" class="keypad-btn">2</button>
+            <button onclick="handleKey('3')" class="keypad-btn">3</button>
+            <button onclick="handleKey('4')" class="keypad-btn">4</button>
+            <button onclick="handleKey('5')" class="keypad-btn">5</button>
+            <button onclick="handleKey('6')" class="keypad-btn">6</button>
+            <button onclick="handleKey('7')" class="keypad-btn">7</button>
+            <button onclick="handleKey('8')" class="keypad-btn">8</button>
+            <button onclick="handleKey('9')" class="keypad-btn">9</button>
+            <button onclick="clearPin()" class="text-red-500 font-bold text-xs uppercase tracking-widest">Clear</button>
+            <button onclick="handleKey('0')" class="keypad-btn">0</button>
+            <button onclick="validatePin()" class="keypad-btn bg-blue-600 hover:bg-blue-500 border-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
             </button>
         </div>
     </div>
 
-    <div id="view-dash" class="hidden w-full max-w-[400px] animate-in slide-in-from-bottom-4 duration-500">
-        <div class="flex justify-between items-center mb-10">
-            <div>
-                <h2 class="text-sm font-bold text-blue-500 uppercase tracking-[0.2em] mb-1">Overview</h2>
-                <h1 class="text-4xl font-extrabold">Trackers</h1>
-            </div>
-            <div class="flex flex-col items-end">
-                <select id="cur-toggle" onchange="renderUI()" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-blue-500 transition-colors">
-                    <option value="USD">USD ($)</option>
-                    <option value="INR">INR (₹)</option>
-                </select>
-            </div>
+    <div id="view-dash" class="hidden w-full max-w-[400px] p-6">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-extrabold">Trackers</h1>
+            <select id="cur-toggle" onchange="renderUI()" class="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs font-bold outline-none">
+                <option value="USD">USD ($)</option>
+                <option value="INR">INR (₹)</option>
+            </select>
         </div>
 
-        <div id="tracker-list" class="space-y-4">
-            </div>
+        <div id="tracker-list" class="space-y-4"></div>
 
         <div id="slot-indicator" class="mt-8 text-center text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4"></div>
 
-        <button id="create-btn" onclick="triggerCreate()" class="w-full h-16 rounded-2xl bg-white text-black font-extrabold flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <button id="create-btn" onclick="triggerCreate()" class="w-full h-14 rounded-2xl bg-white text-black font-extrabold flex items-center justify-center gap-2">
             Create New Tracker
         </button>
     </div>
@@ -103,86 +112,50 @@
         let pin = "";
         let vaultData = [];
 
-        function showToast(msg, isError = false) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.style.color = isError ? '#ff4444' : '#44ff44';
-            t.style.opacity = '1';
-            setTimeout(() => t.style.opacity = '0', 3000);
-        }
-
-        function handleKey(v) {
-            if(pin.length < 4) {
-                pin += v;
-                updatePinUI();
-            }
-        }
-
-        function clearPin() {
-            pin = "";
-            updatePinUI();
-        }
-
+        function handleKey(v) { if(pin.length < 4) { pin += v; updatePinUI(); } }
+        function clearPin() { pin = ""; updatePinUI(); }
         function updatePinUI() {
-            for(let i=0; i<4; i++) {
-                document.getElementById(`p-${i}`).classList.toggle('filled', i < pin.length);
-            }
+            for(let i=0; i<4; i++) document.getElementById(`p-${i}`).classList.toggle('filled', i < pin.length);
         }
 
         async function validatePin() {
-            if(pin.length !== 4) return showToast("Enter 4-digit PIN", true);
+            if(pin.length !== 4) return;
             const res = await fetch(`/api/get-trackers?pin=${pin}`);
-            if(!res.ok) {
-                const err = await res.json();
-                return showToast(err.error || "Server Error", true);
+            if(res.ok) {
+                const data = await res.json();
+                vaultData = data.trackers;
+                document.getElementById('view-auth').classList.add('hidden');
+                document.getElementById('view-dash').classList.remove('hidden');
+                renderUI();
+            } else {
+                alert("Incorrect PIN or Server Error");
+                clearPin();
             }
-            const data = await res.json();
-            vaultData = data.trackers;
-            document.getElementById('view-auth').classList.add('hidden');
-            document.getElementById('view-dash').classList.remove('hidden');
-            renderUI();
         }
 
         function renderUI() {
             const cur = document.getElementById('cur-toggle').value;
             const sym = cur === 'USD' ? '$' : '₹';
             const list = document.getElementById('tracker-list');
-            const slot = document.getElementById('slot-indicator');
-            const btn = document.getElementById('create-btn');
-
             list.innerHTML = vaultData.map(t => `
-                <div class="glass-card p-6 rounded-[2rem] flex justify-between items-center group transition-all hover:translate-y-[-2px]">
-                    <div>
-                        <h3 class="font-extrabold text-lg text-white group-hover:text-blue-400 transition-colors">${t.name}</h3>
-                        <p class="text-xs font-bold text-gray-600 uppercase tracking-tighter mt-1">Stable Account</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-2xl font-black text-white">${sym}${Number(t.balance).toLocaleString()}</span>
-                    </div>
+                <div class="glass-card p-6 rounded-3xl flex justify-between items-center">
+                    <div><h3 class="font-bold text-lg">${t.name}</h3><p class="text-[10px] text-gray-500 uppercase tracking-widest">Active</p></div>
+                    <div class="text-xl font-black">${sym}${Number(t.balance).toLocaleString()}</div>
                 </div>
             `).join('');
-
-            slot.innerText = `${vaultData.length} of 5 slots used`;
-            btn.style.display = vaultData.length >= 5 ? 'none' : 'flex';
+            document.getElementById('slot-indicator').innerText = `${vaultData.length} / 5 used`;
+            document.getElementById('create-btn').style.display = vaultData.length >= 5 ? 'none' : 'flex';
         }
 
         async function triggerCreate() {
-            const name = prompt("Name your tracker:");
+            const name = prompt("Name:");
             if(!name) return;
-
-            const res = await fetch('/api/create-tracker', {
+            await fetch('/api/create-tracker', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ name, pin })
             });
-
-            if(res.ok) {
-                showToast("Tracker created!");
-                validatePin(); // Refresh
-            } else {
-                const err = await res.json();
-                showToast(err.error, true);
-            }
+            validatePin();
         }
     </script>
 </body>
