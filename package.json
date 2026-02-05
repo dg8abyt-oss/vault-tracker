@@ -1,15 +1,10 @@
 {
-  "name": "vault-tracker-final",
-  "version": "5.0.0",
-  "main": "api/index.ts",
-  "license": "MIT",
+  "name": "vault-tracker",
+  "version": "1.0.0",
   "dependencies": {
     "typescript": "latest",
     "@types/node": "latest",
     "@vercel/node": "latest",
     "@supabase/supabase-js": "latest"
-  },
-  "scripts": {
-    "build": "echo 'Building...'"
   }
 }
