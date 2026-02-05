@@ -13,11 +13,12 @@
         .glass { background: rgba(20,20,20,0.95); backdrop-filter: blur(20px); border: 1px solid #333; }
         .pin-dot { width: 14px; height: 14px; border: 2px solid #444; border-radius: 50%; transition: 0.2s; }
         .pin-dot.on { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
-        .key-btn { height: 60px; border-radius: 16px; background: #1a1a1a; font-size: 1.5rem; font-weight: 700; }
+        .key-btn { height: 60px; border-radius: 16px; background: #1a1a1a; font-size: 1.5rem; font-weight: 700; transition: 0.1s; }
         .key-btn:active { background: #333; transform: scale(0.95); }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center p-4">
+
     <div id="status-bar" class="fixed top-0 w-full text-center text-[10px] font-bold py-1 hidden"></div>
 
     <div id="view-auth" class="w-full max-w-xs text-center">
@@ -94,7 +95,7 @@
 
         async function checkApi() {
             try { await fetch('/api/ping'); debug("CONNECTED"); } 
-            catch { debug("CHECKING CONNECTION...", true); }
+            catch { debug("CONNECTING...", true); }
         }
         checkApi();
 
@@ -113,7 +114,7 @@
                 renderDash();
                 document.getElementById('view-auth').classList.add('hidden');
                 document.getElementById('view-dash').classList.remove('hidden');
-            } catch(e) { debug(e.message, true); clr(); }
+            } catch(e) { debug("INVALID PIN", true); clr(); }
         }
 
         function renderDash() {
@@ -191,7 +192,7 @@
         }
 
         async function delTx(txId, amt, type) {
-            if(confirm("Undo?")) {
+            if(confirm("Delete this transaction?")) {
                 await fetch('/api/delete-transaction', { method:'POST', body:JSON.stringify({txId, trackerId:curId, amount:amt, type}) });
                 loadHistory(curId);
             }
