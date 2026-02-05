@@ -12,7 +12,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const revertAmt = type === 'income' ? -Number(amount) : Number(amount);
     
-    // FIXED: Added check for null data
     const { data: t, error: fErr } = await db.from('trackers').select('balance').eq('id', trackerId).single();
     if(fErr || !t) throw new Error("Tracker not found");
 
