@@ -1,18 +1,16 @@
 {
-  "name": "vault-tracker-node20",
-  "version": "7.0.0",
-  "description": "Node 20 Upgrade",
-  "main": "api/index.js",
+  "name": "vault-tracker",
+  "version": "1.0.0",
   "engines": {
     "node": "20.x"
   },
   "dependencies": {
-    "typescript": "latest",
-    "@types/node": "latest",
-    "@vercel/node": "latest",
-    "@supabase/supabase-js": "latest"
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@vercel/node": "^3.0.0",
+    "@supabase/supabase-js": "^2.0.0"
   },
   "scripts": {
-    "build": "echo 'Building for Node 20...' && tsc --noEmit"
+    "build": "tsc"
   }
 }
